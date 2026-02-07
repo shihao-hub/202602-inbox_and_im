@@ -378,7 +378,7 @@ CREATE INDEX idx_records_user_unread ON notification_records(user_id, is_read, c
 #### 🎯 接口设计实例
 
 **设计原则**：
-1. **路径参数最多一个**：避免 `/{id}/sub/{subid}` 这种嵌套
+1. **路径参数在末尾**：路径参数只能有一个，且必须在 URL 的最末尾
 2. **路由语义化**：让人一眼就能看懂是干什么的
 3. **部分 RESTful**：保持 RESTful 的好处，但不死板
 
@@ -397,7 +397,7 @@ Response: {
 GET /api/v1/notifications/unread-count
 Response: {"unread_count": 5}
 
-# 3. 获取站内信详情（只有一个路径参数）
+# 3. 获取站内信详情（路径参数在末尾）
 GET /api/v1/notifications/{record_id}
 Response: {
   "id": "record_001",
@@ -406,25 +406,25 @@ Response: {
   "created_at": "2025-02-07T10:00:00Z"
 }
 
-# 4. 标记单条已读（语义化，避免嵌套）
-PUT /api/v1/notifications/{record_id}/mark-read
+# 4. 标记单条已读（使用查询参数，路径参数在末尾）
+POST /api/v1/notifications/{record_id}?action=mark-read
 Body: {}
 Response: 204 No Content
 
-# 5. 标记全部已读（独立动作，语义清晰）
+# 5. 标记全部已读（独立动作，无路径参数）
 POST /api/v1/notifications/mark-all-read
 Body: {}
 Response: {"message": "已将 10 条站内信标记为已读"}
 
-# 6. 删除站内信（标准 RESTful）
+# 6. 删除站内信（标准 RESTful，路径参数在末尾）
 DELETE /api/v1/notifications/{record_id}
 Response: 204 No Content
 ```
 
 **设计说明**：
-- ✅ **避免嵌套**：没有 `/{id}/read` 这种，而是 `/{id}/mark-read` 更清晰
-- ✅ **语义化**：`mark-read` 比 `read` 更明确，`mark-all-read` 一眼就知道是批量操作
-- ✅ **只有一个路径参数**：所有接口都只有一个 `{record_id}` 或没有路径参数
+- ✅ **路径参数在末尾**：`{record_id}` 始终在 URL 末尾，后面没有其他路径段
+- ✅ **语义化**：`action=mark-read` 明确表示操作类型
+- ✅ **避免嵌套**：没有 `/{id}/mark-read` 这种路径参数在中间的设计
 
 **站内信管理端 API**：
 
@@ -451,11 +451,11 @@ Response: {
   "items": [...]
 }
 
-# 3. 获取站内信详情
+# 3. 获取站内信详情（路径参数在末尾）
 GET /api/v1/admin/notifications/{notification_id}
 Response: {...}
 
-# 4. 更新站内信（标准 RESTful）
+# 4. 更新站内信（标准 RESTful，路径参数在末尾）
 PUT /api/v1/admin/notifications/{notification_id}
 Body: {
   "title": "系统维护通知（已更新）",
@@ -463,12 +463,12 @@ Body: {
 }
 Response: {...}
 
-# 5. 删除站内信（标准 RESTful）
+# 5. 删除站内信（标准 RESTful，路径参数在末尾）
 DELETE /api/v1/admin/notifications/{notification_id}
 Response: 204 No Content
 
-# 6. 发送站内信（语义化动作，避免嵌套）
-POST /api/v1/admin/notifications/{notification_id}/send-to-users
+# 6. 发送站内信（使用查询参数，路径参数在末尾）
+POST /api/v1/admin/notifications/{notification_id}?action=send-to-users
 Body: {
   "user_ids": ["user_A", "user_B"],
   "send_to_all": false
@@ -477,86 +477,112 @@ Response: {"message": "成功发送给 2 个用户"}
 ```
 
 **设计说明**：
-- ✅ **动作语义化**：`send-to-users` 比 `send` 更明确
-- ✅ **避免嵌套**：没有 `/{id}/send/{action}` 这种
-- ✅ **只有一个路径参数**：`{notification_id}` 在末尾
+- ✅ **路径参数在末尾**：`{notification_id}` 在最末尾，使用查询参数 `action` 指定具体操作
+- ✅ **动作语义化**：`action=send-to-users` 比 `send` 更明确
+- ✅ **灵活扩展**：同一个资源可以通过不同的 `action` 执行不同操作
 
-**对比：传统 RESTful vs 本设计**
+**对比：错误设计 vs 正确设计**
 
 ```
-传统 RESTful（过度死板）：
-POST /api/v1/notifications/{id}/read          # 不够语义化
-POST /api/v1/notifications/read-all          # 动词在资源前
-POST /api/v1/admin/notifications/{id}/send   # send 不够明确
+❌ 错误设计（路径参数在中间）：
+PUT /api/v1/notifications/{record_id}/mark-read
+POST /api/v1/admin/notifications/{notification_id}/send-to-users
+GET /api/v1/users/{user_id}/notifications/{notification_id}
 
-本设计（语义化 + 部分RESTful）：
-PUT /api/v1/notifications/{id}/mark-read     # 明确是标记操作
-POST /api/v1/notifications/mark-all-read     # 语义清晰
-POST /api/v1/admin/notifications/{id}/send-to-users  # 一眼懂
+✅ 正确设计（路径参数在末尾）：
+POST /api/v1/notifications/{record_id}?action=mark-read
+POST /api/v1/admin/notifications/{notification_id}?action=send-to-users
+GET /api/v1/notification-records/{id}  # 扁平化设计
 ```
 
 **更多示例**：
 
 ```
-# ❌ 不推荐（不够语义化）
+# ❌ 错误设计（路径参数在中间）
 POST /api/v1/users/{id}/verify-email
 POST /api/v1/users/{id}/reset-password
 POST /api/v1/orders/{id}/cancel
+POST /api/v1/payments/{id}/refund
 
-# ✅ 推荐（语义化 + 部分RESTful）
-POST /api/v1/users/{id}/verify-email-token
-POST /api/v1/users/{id}/reset-password-with-token
-POST /api/v1/orders/{id}/request-cancellation
+# ✅ 正确设计（路径参数在末尾 + 查询参数）
+POST /api/v1/users/{id}?action=verify-email
+POST /api/v1/users/{id}?action=reset-password
+POST /api/v1/orders/{id}?action=cancel
+POST /api/v1/payments/{id}?action=refund
 
-# ✅ 或者更简洁的语义化方式
-POST /api/v1/users/verify-email          # 通过 body 传 user_id
-POST /api/v1/users/reset-password       # 通过 body 传 user_id
-POST /api/v1/orders/cancel              # 通过 body 传 order_id
+# ✅ 或者完全无路径参数，通过 body 传递
+POST /api/v1/users/verify-email
+Body: {"user_id": "xxx"}
+
+POST /api/v1/users/reset-password
+Body: {"user_id": "xxx"}
+
+POST /api/v1/orders/cancel
+Body: {"order_id": "xxx"}
 ```
+
+**设计模式总结**：
+
+| 模式 | 适用场景 | 示例 |
+|------|---------|------|
+| **标准 RESTful** | CRUD 操作 | `GET /{id}`、`DELETE /{id}` |
+| **查询参数模式** | 对资源执行特定操作 | `POST /{id}?action=xxx` |
+| **独立端点模式** | 批量操作或跨资源操作 | `POST /mark-all-read` |
+| **Body 参数模式** | 复杂业务操作 | `POST /verify-email` + body |
 
 ### 3.2 接口设计最佳实践
 
 #### ✅ DO（推荐做法）
 
-1. **路径参数最多一个，且在末尾**
+1. **路径参数在末尾**
 
    ```
    ✅ GET /api/v1/notifications/{id}
-   ✅ POST /api/v1/notifications/{id}/mark-read
-   ❌ GET /api/v1/users/{id}/notifications/{id}/records/{id}
+   ✅ POST /api/v1/notifications/{id}?action=mark-read
+   ✅ DELETE /api/v1/notifications/{id}
+   ❌ POST /api/v1/notifications/{id}/mark-read
+   ❌ GET /api/v1/users/{user_id}/notifications/{notification_id}
    ```
 
-2. **路由语义化，一眼就懂**
+2. **使用查询参数指定操作**
 
    ```
-   ✅ POST /api/v1/notifications/{id}/mark-read
-   ✅ POST /api/v1/notifications/mark-all-read
-   ✅ POST /api/v1/admin/notifications/{id}/send-to-users
-   ❌ POST /api/v1/notifications/{id}/read          # 不够明确
-   ❌ POST /api/v1/admin/notifications/{id}/send    # send 什么？
+   ✅ POST /api/v1/notifications/{id}?action=mark-read
+   ✅ POST /api/v1/admin/notifications/{id}?action=send-to-users
+   ❌ POST /api/v1/notifications/{id}/mark-read
    ```
 
-3. **使用版本号**
+3. **路由语义化，一眼就懂**
+
+   ```
+   ✅ ?action=mark-read
+   ✅ ?action=send-to-users
+   ✅ ?action=reset-password
+   ❌ ?action=read（不够明确）
+   ❌ ?action=send（发送什么？）
+   ```
+
+4. **使用版本号**
 
    ```
    /api/v1/notifications
    /api/v2/notifications  # 新版本
    ```
 
-4. **使用复数名词**
+5. **使用复数名词**
 
    ```
    ✅ /api/v1/users
    ❌ /api/v1/user
    ```
 
-5. **使用查询参数过滤**
+6. **使用查询参数过滤**
 
    ```
    GET /api/v1/notifications?type=system&is_read=false&page=1
    ```
 
-6. **统一响应格式**
+7. **统一响应格式**
 
    ```json
    {
@@ -566,7 +592,7 @@ POST /api/v1/orders/cancel              # 通过 body 传 order_id
    }
    ```
 
-7. **提供分页信息**
+8. **提供分页信息**
 
    ```json
    {
@@ -579,24 +605,34 @@ POST /api/v1/orders/cancel              # 通过 body 传 order_id
 
 #### ❌ DON'T（不推荐做法）
 
-1. **多个路径参数或嵌套过深**
+1. **路径参数在中间**
 
    ```
-   ❌ /api/v1/users/{id}/notifications/{id}/read
-   ❌ /api/v1/users/{id}/notifications/{id}/records/{id}
-   ✅ /api/v1/notification-records/{id}/mark-read
-   ```
-
-2. **不够语义化的路由**
-
-   ```
-   ❌ POST /api/v1/notifications/{id}/read
+   ❌ POST /api/v1/notifications/{id}/mark-read
    ❌ POST /api/v1/notifications/{id}/send
-   ✅ POST /api/v1/notifications/{id}/mark-read
-   ✅ POST /api/v1/admin/notifications/{id}/send-to-users
+   ❌ GET /api/v1/users/{id}/notifications/{id}/read
+   ✅ POST /api/v1/notifications/{id}?action=mark-read
+   ✅ GET /api/v1/notification-records/{id}
    ```
 
-3. **在 URL 中使用动词**
+2. **多个路径参数或嵌套过深**
+
+   ```
+   ❌ /api/v1/users/{id}/notifications/{id}/records/{id}
+   ❌ /api/v1/users/{id}/posts/{id}/comments/{id}
+   ✅ /api/v1/notification-records/{id}
+   ```
+
+3. **不够语义化的操作**
+
+   ```
+   ❌ ?action=read
+   ❌ ?action=send
+   ✅ ?action=mark-read
+   ✅ ?action=send-to-users
+   ```
+
+4. **在 URL 路径中使用动词**
 
    ```
    ❌ /api/v1/getNotifications
@@ -604,14 +640,14 @@ POST /api/v1/orders/cancel              # 通过 body 传 order_id
    ✅ /api/v1/notifications (GET/POST 区分)
    ```
 
-4. **返回过多数据**
+5. **返回过多数据**
 
    ```
    ❌ 一次性返回 10000 条记录
    ✅ 使用分页，每页 20-50 条
    ```
 
-5. **不使用状态码**
+6. **不使用状态码**
 
    ```
    ❌ 所有请求都返回 200，错误信息在 body 里
@@ -624,9 +660,18 @@ POST /api/v1/orders/cancel              # 通过 body 传 order_id
 
 | 原则 | 说明 | 示例 |
 |------|------|------|
-| **1. 单路径参数** | 路径参数最多一个，且在末尾 | `/{id}/mark-read` ✅<br>`/{id}/sub/{subid}` ❌ |
-| **2. 语义化路由** | 让人一眼看懂是干什么的 | `mark-all-read` ✅<br>`read` ❌ |
-| **3. 部分RESTful** | 保持 RESTful 好处，但不死板 | `POST /mark-read` ✅ |
+| **1. 路径参数在末尾** | 路径参数只能有一个，且必须在 URL 最末尾 | `/{id}?action=xxx` ✅<br>`/{id}/action` ❌ |
+| **2. 路由语义化** | 让人一眼看懂是干什么的 | `action=mark-read` ✅<br>`action=read` ❌ |
+| **3. 部分RESTful** | 保持 RESTful 好处，但不死板 | `POST /{id}?action=xxx` ✅ |
+
+#### 四种推荐模式
+
+| 模式 | URL 格式 | 适用场景 | 示例 |
+|------|---------|---------|------|
+| **标准 RESTful** | `METHOD /resource/{id}` | CRUD 操作 | `GET /{id}`、`DELETE /{id}` |
+| **查询参数模式** | `POST /resource/{id}?action=xxx` | 对资源执行特定操作 | `POST /{id}?action=mark-read` |
+| **独立端点模式** | `POST /resource/action` | 批量操作或跨资源操作 | `POST /mark-all-read` |
+| **Body 参数模式** | `POST /resource/action` + body | 复杂业务操作 | `POST /verify-email` |
 
 #### RESTful 适用场景
 
@@ -636,25 +681,27 @@ POST /api/v1/orders/cancel              # 通过 body 传 order_id
 - ✅ 单资源操作
 
 **适度偏离 RESTful**：
-- ✅ 动作操作（mark-read、send-to-users）
-- ✅ 批量操作（mark-all-read）
+- ✅ 动作操作（使用 `?action=xxx`）
+- ✅ 批量操作（独立端点）
 - ✅ 业务特定动作（approve、reject、cancel）
 
 #### 命名规范
 
-| 操作类型 | 命名模式 | 示例 |
-|---------|---------|------|
-| 标记操作 | `mark-{status}` | `mark-read`、`mark-important` |
-| 批量操作 | `mark-all-{status}` | `mark-all-read` |
-| 发送操作 | `send-to-{target}` | `send-to-users`、`send-to-group` |
-| 验证操作 | `verify-{object}` | `verify-email`、`verify-phone` |
-| 重置操作 | `reset-{object}` | `reset-password` |
-| 请求操作 | `request-{action}` | `request-cancellation`、`request-approval` |
+| 操作类型 | action 参数值 | 示例 |
+|---------|--------------|------|
+| 标记操作 | `mark-{status}` | `action=mark-read`、`action=mark-important` |
+| 批量标记 | `mark-all-{status}` | `action=mark-all-read` |
+| 发送操作 | `send-to-{target}` | `action=send-to-users`、`action=send-to-group` |
+| 验证操作 | `verify-{object}` | `action=verify-email`、`action=verify-phone` |
+| 重置操作 | `reset-{object}` | `action=reset-password` |
+| 请求操作 | `request-{action}` | `action=request-cancellation`、`action=request-approval` |
+| 审批操作 | `approve` / `reject` | `action=approve`、`action=reject` |
 
 ### 3.4 接口设计检查清单
 
-- [ ] **路径参数规则**：最多一个路径参数，且在路由末尾
-- [ ] **路由语义化**：一眼能看懂是什么操作
+- [ ] **路径参数在末尾**：路径参数只能有一个，且必须在 URL 最末尾
+- [ ] **使用查询参数指定操作**：避免路径嵌套，使用 `?action=xxx`
+- [ ] **路由语义化**：action 值要清晰明确
 - [ ] **RESTful 风格**：基本遵循 RESTful，但不死板
 - [ ] **HTTP 方法正确**：GET/POST/PUT/DELETE 使用得当
 - [ ] **状态码合理**：使用正确的 HTTP 状态码
