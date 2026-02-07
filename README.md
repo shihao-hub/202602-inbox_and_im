@@ -115,14 +115,24 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
+生成安全的 JWT SECRET_KEY：
+
+```bash
+# 生成密钥并显示
+python scripts/generate_secret_key.py
+
+# 生成密钥并自动更新到 .env 文件（推荐）
+python scripts/generate_secret_key.py --update
+```
+
 主要配置项：
 
 ```env
 # 数据库配置
 DATABASE_URL=postgresql://postgres:password@localhost:5432/inbox_im
 
-# JWT 密钥（生产环境必须更改）
-SECRET_KEY=your-super-secret-key-change-this-in-production-min-32-chars
+# JWT 密钥（使用脚本生成，生产环境必须更改）
+SECRET_KEY=<自动生成的安全密钥>
 
 # Token 有效期
 ACCESS_TOKEN_EXPIRE_MINUTES=15
