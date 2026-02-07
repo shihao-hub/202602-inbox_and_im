@@ -377,6 +377,11 @@ CREATE INDEX idx_records_user_unread ON notification_records(user_id, is_read, c
 
 #### 🎯 接口设计实例
 
+**设计原则**：
+1. **路径参数最多一个**：避免 `/{id}/sub/{subid}` 这种嵌套
+2. **路由语义化**：让人一眼就能看懂是干什么的
+3. **部分 RESTful**：保持 RESTful 的好处，但不死板
+
 **站内信用户端 API**：
 
 ```
@@ -388,7 +393,11 @@ Response: {
   "items": [...]
 }
 
-# 2. 获取站内信详情
+# 2. 获取未读数量（独立端点，语义清晰）
+GET /api/v1/notifications/unread-count
+Response: {"unread_count": 5}
+
+# 3. 获取站内信详情（只有一个路径参数）
 GET /api/v1/notifications/{record_id}
 Response: {
   "id": "record_001",
@@ -397,27 +406,30 @@ Response: {
   "created_at": "2025-02-07T10:00:00Z"
 }
 
-# 3. 标记已读
-POST /api/v1/notifications/{record_id}/read
+# 4. 标记单条已读（语义化，避免嵌套）
+PUT /api/v1/notifications/{record_id}/mark-read
+Body: {}
 Response: 204 No Content
 
-# 4. 全部标记已读
-POST /api/v1/notifications/read-all
+# 5. 标记全部已读（独立动作，语义清晰）
+POST /api/v1/notifications/mark-all-read
+Body: {}
 Response: {"message": "已将 10 条站内信标记为已读"}
 
-# 5. 删除站内信
+# 6. 删除站内信（标准 RESTful）
 DELETE /api/v1/notifications/{record_id}
 Response: 204 No Content
-
-# 6. 获取未读数量
-GET /api/v1/notifications/unread-count
-Response: {"unread_count": 5}
 ```
+
+**设计说明**：
+- ✅ **避免嵌套**：没有 `/{id}/read` 这种，而是 `/{id}/mark-read` 更清晰
+- ✅ **语义化**：`mark-read` 比 `read` 更明确，`mark-all-read` 一眼就知道是批量操作
+- ✅ **只有一个路径参数**：所有接口都只有一个 `{record_id}` 或没有路径参数
 
 **站内信管理端 API**：
 
 ```
-# 1. 创建站内信
+# 1. 创建站内信（标准 RESTful）
 POST /api/v1/admin/notifications
 Body: {
   "type": "system",
@@ -433,13 +445,17 @@ Response: {
 }
 
 # 2. 获取站内信管理列表
-GET /api/v1/admin/notifications?skip=0&limit=20
+GET /api/v1/admin/notifications?page=1&page_size=20
 Response: {
   "total": 50,
   "items": [...]
 }
 
-# 3. 更新站内信
+# 3. 获取站内信详情
+GET /api/v1/admin/notifications/{notification_id}
+Response: {...}
+
+# 4. 更新站内信（标准 RESTful）
 PUT /api/v1/admin/notifications/{notification_id}
 Body: {
   "title": "系统维护通知（已更新）",
@@ -447,12 +463,12 @@ Body: {
 }
 Response: {...}
 
-# 4. 删除站内信
+# 5. 删除站内信（标准 RESTful）
 DELETE /api/v1/admin/notifications/{notification_id}
 Response: 204 No Content
 
-# 5. 发送站内信给用户
-POST /api/v1/admin/notifications/{notification_id}/send
+# 6. 发送站内信（语义化动作，避免嵌套）
+POST /api/v1/admin/notifications/{notification_id}/send-to-users
 Body: {
   "user_ids": ["user_A", "user_B"],
   "send_to_all": false
@@ -460,42 +476,98 @@ Body: {
 Response: {"message": "成功发送给 2 个用户"}
 ```
 
+**设计说明**：
+- ✅ **动作语义化**：`send-to-users` 比 `send` 更明确
+- ✅ **避免嵌套**：没有 `/{id}/send/{action}` 这种
+- ✅ **只有一个路径参数**：`{notification_id}` 在末尾
+
+**对比：传统 RESTful vs 本设计**
+
+```
+传统 RESTful（过度死板）：
+POST /api/v1/notifications/{id}/read          # 不够语义化
+POST /api/v1/notifications/read-all          # 动词在资源前
+POST /api/v1/admin/notifications/{id}/send   # send 不够明确
+
+本设计（语义化 + 部分RESTful）：
+PUT /api/v1/notifications/{id}/mark-read     # 明确是标记操作
+POST /api/v1/notifications/mark-all-read     # 语义清晰
+POST /api/v1/admin/notifications/{id}/send-to-users  # 一眼懂
+```
+
+**更多示例**：
+
+```
+# ❌ 不推荐（不够语义化）
+POST /api/v1/users/{id}/verify-email
+POST /api/v1/users/{id}/reset-password
+POST /api/v1/orders/{id}/cancel
+
+# ✅ 推荐（语义化 + 部分RESTful）
+POST /api/v1/users/{id}/verify-email-token
+POST /api/v1/users/{id}/reset-password-with-token
+POST /api/v1/orders/{id}/request-cancellation
+
+# ✅ 或者更简洁的语义化方式
+POST /api/v1/users/verify-email          # 通过 body 传 user_id
+POST /api/v1/users/reset-password       # 通过 body 传 user_id
+POST /api/v1/orders/cancel              # 通过 body 传 order_id
+```
+
 ### 3.2 接口设计最佳实践
 
 #### ✅ DO（推荐做法）
 
-1. **使用版本号**
-   
+1. **路径参数最多一个，且在末尾**
+
+   ```
+   ✅ GET /api/v1/notifications/{id}
+   ✅ POST /api/v1/notifications/{id}/mark-read
+   ❌ GET /api/v1/users/{id}/notifications/{id}/records/{id}
+   ```
+
+2. **路由语义化，一眼就懂**
+
+   ```
+   ✅ POST /api/v1/notifications/{id}/mark-read
+   ✅ POST /api/v1/notifications/mark-all-read
+   ✅ POST /api/v1/admin/notifications/{id}/send-to-users
+   ❌ POST /api/v1/notifications/{id}/read          # 不够明确
+   ❌ POST /api/v1/admin/notifications/{id}/send    # send 什么？
+   ```
+
+3. **使用版本号**
+
    ```
    /api/v1/notifications
    /api/v2/notifications  # 新版本
    ```
 
-2. **使用复数名词**
-   
+4. **使用复数名词**
+
    ```
    ✅ /api/v1/users
    ❌ /api/v1/user
    ```
 
-3. **使用查询参数过滤**
-   
+5. **使用查询参数过滤**
+
    ```
    GET /api/v1/notifications?type=system&is_read=false&page=1
    ```
 
-4. **统一响应格式**
-   
+6. **统一响应格式**
+
    ```json
    {
-     "data": {...},
+     "code": 200,
      "message": "success",
-     "code": 200
+     "data": {...}
    }
    ```
 
-5. **提供分页信息**
-   
+7. **提供分页信息**
+
    ```json
    {
      "total": 100,
@@ -507,37 +579,83 @@ Response: {"message": "成功发送给 2 个用户"}
 
 #### ❌ DON'T（不推荐做法）
 
-1. **在 URL 中使用动词**
-   
+1. **多个路径参数或嵌套过深**
+
+   ```
+   ❌ /api/v1/users/{id}/notifications/{id}/read
+   ❌ /api/v1/users/{id}/notifications/{id}/records/{id}
+   ✅ /api/v1/notification-records/{id}/mark-read
+   ```
+
+2. **不够语义化的路由**
+
+   ```
+   ❌ POST /api/v1/notifications/{id}/read
+   ❌ POST /api/v1/notifications/{id}/send
+   ✅ POST /api/v1/notifications/{id}/mark-read
+   ✅ POST /api/v1/admin/notifications/{id}/send-to-users
+   ```
+
+3. **在 URL 中使用动词**
+
    ```
    ❌ /api/v1/getNotifications
    ❌ /api/v1/createNotification
+   ✅ /api/v1/notifications (GET/POST 区分)
    ```
 
-2. **嵌套过深**
-   
-   ```
-   ❌ /api/v1/users/{id}/notifications/{id}/records/{id}
-   ✅ /api/v1/notification_records/{id}
-   ```
+4. **返回过多数据**
 
-3. **返回过多数据**
-   
    ```
    ❌ 一次性返回 10000 条记录
    ✅ 使用分页，每页 20-50 条
    ```
 
-4. **不使用状态码**
-   
+5. **不使用状态码**
+
    ```
    ❌ 所有请求都返回 200，错误信息在 body 里
    ✅ 使用正确的 HTTP 状态码
    ```
 
-### 3.3 接口设计检查清单
+### 3.3 设计原则总结
 
-- [ ] **RESTful 风格**：使用资源命名，避免动词
+#### 三大原则
+
+| 原则 | 说明 | 示例 |
+|------|------|------|
+| **1. 单路径参数** | 路径参数最多一个，且在末尾 | `/{id}/mark-read` ✅<br>`/{id}/sub/{subid}` ❌ |
+| **2. 语义化路由** | 让人一眼看懂是干什么的 | `mark-all-read` ✅<br>`read` ❌ |
+| **3. 部分RESTful** | 保持 RESTful 好处，但不死板 | `POST /mark-read` ✅ |
+
+#### RESTful 适用场景
+
+**完全符合 RESTful**：
+- ✅ CRUD 操作（GET/POST/PUT/DELETE）
+- ✅ 资源集合查询
+- ✅ 单资源操作
+
+**适度偏离 RESTful**：
+- ✅ 动作操作（mark-read、send-to-users）
+- ✅ 批量操作（mark-all-read）
+- ✅ 业务特定动作（approve、reject、cancel）
+
+#### 命名规范
+
+| 操作类型 | 命名模式 | 示例 |
+|---------|---------|------|
+| 标记操作 | `mark-{status}` | `mark-read`、`mark-important` |
+| 批量操作 | `mark-all-{status}` | `mark-all-read` |
+| 发送操作 | `send-to-{target}` | `send-to-users`、`send-to-group` |
+| 验证操作 | `verify-{object}` | `verify-email`、`verify-phone` |
+| 重置操作 | `reset-{object}` | `reset-password` |
+| 请求操作 | `request-{action}` | `request-cancellation`、`request-approval` |
+
+### 3.4 接口设计检查清单
+
+- [ ] **路径参数规则**：最多一个路径参数，且在路由末尾
+- [ ] **路由语义化**：一眼能看懂是什么操作
+- [ ] **RESTful 风格**：基本遵循 RESTful，但不死板
 - [ ] **HTTP 方法正确**：GET/POST/PUT/DELETE 使用得当
 - [ ] **状态码合理**：使用正确的 HTTP 状态码
 - [ ] **版本控制**：URL 中包含版本号
