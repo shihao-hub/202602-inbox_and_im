@@ -135,6 +135,7 @@ CREATE TABLE notifications (
 ```
 
 **站内信类型**：
+
 - `system`: 系统通知
 - `business`: 业务通知
 - `reminder`: 提醒通知
@@ -212,6 +213,7 @@ def create_notification(
 ```
 
 **流程**：
+
 1. 创建 `Notification` 对象
 2. 插入到数据库
 3. 返回站内信信息（但还未发送给任何用户）
@@ -256,6 +258,7 @@ def send_to_users(
 ```
 
 **关键点**：
+
 1. **去重检查**：通过数据库查询防止重复发送
 2. **批量插入**：使用 `bulk_save_objects` 提高性能
 3. **事务处理**：全部成功或全部失败
@@ -337,6 +340,7 @@ def get_user_notifications(
 ```
 
 **查询流程**：
+
 ```
 用户A查询站内信列表
     │
@@ -651,10 +655,12 @@ async def send_notification(
 ### ✅ 1. 内容与记录分离
 
 **实现**：
+
 - `notifications` 表：存储站内信内容（1 份）
 - `notification_records` 表：存储用户接收记录（N 份）
 
 **好处**：
+
 - 节省存储空间
 - 避免数据冗余
 - 便于修改内容
@@ -662,11 +668,13 @@ async def send_notification(
 ### ✅ 2. 防止重复发送
 
 **数据库层面**：
+
 ```sql
 UNIQUE(notification_id, user_id)
 ```
 
 **代码层面**：
+
 ```python
 existing = db.query(NotificationRecord).filter(
     NotificationRecord.notification_id == notification_id,
@@ -681,6 +689,7 @@ if not existing:
 ### ✅ 3. 软删除
 
 **删除时**：
+
 ```python
 # 只标记不物理删除
 record.is_deleted = True
@@ -688,12 +697,14 @@ record.deleted_at = datetime.utcnow()
 ```
 
 **查询时**：
+
 ```python
 # 过滤已删除的记录
 .filter(NotificationRecord.is_deleted == False)
 ```
 
 **好处**：
+
 - 数据可恢复
 - 保留审计日志
 - 可用于统计分析
@@ -701,6 +712,7 @@ record.deleted_at = datetime.utcnow()
 ### ✅ 4. 级联删除
 
 **定义**：
+
 ```python
 notification_id = Column(
     UUID(as_uuid=True),
@@ -710,12 +722,14 @@ notification_id = Column(
 ```
 
 **效果**：
+
 - 删除 `notifications` 记录时
 - 自动删除所有关联的 `notification_records`
 
 ### ✅ 5. 性能优化
 
 **批量插入**：
+
 ```python
 # 使用批量插入代替逐条插入
 db.bulk_save_objects(records)
@@ -723,18 +737,21 @@ db.commit()
 ```
 
 **索引优化**：
+
 ```python
 # 在常用查询字段上建立索引
 index=True  # user_id, notification_id, is_read, created_at
 ```
 
 **分页查询**：
+
 ```python
 # 避免一次性加载大量数据
 records = query.offset(skip).limit(limit).all()
 ```
 
 **关联查询优化**：
+
 ```python
 # 使用 join 避免 N+1 查询
 query = db.query(NotificationRecord)\
@@ -745,12 +762,14 @@ query = db.query(NotificationRecord)\
 ### ✅ 6. 权限控制
 
 **验证用户权限**：
+
 ```python
 # 查询时验证用户只能访问自己的站内信
 .filter(NotificationRecord.user_id == user_id)
 ```
 
 **JWT 认证**：
+
 ```python
 # API 层使用依赖注入进行认证
 @router.get("/notifications")
@@ -768,11 +787,13 @@ async def get_notifications(
 站内信系统的核心实现就是：
 
 ### 核心组件
+
 1. **两张表**：`notifications`（内容）+ `notification_records`（记录）
 2. **一个服务**：`NotificationService` 处理所有业务逻辑
 3. **一组 API**：RESTful 接口供前端调用
 
 ### 关键特性
+
 - ✅ 内容与记录分离（避免冗余）
 - ✅ 防止重复发送（唯一约束 + 代码检查）
 - ✅ 软删除（可恢复、保留审计）
@@ -781,6 +802,7 @@ async def get_notifications(
 - ✅ 权限控制（JWT 认证）
 
 ### 适用场景
+
 - 系统通知（维护、升级、警告）
 - 业务通知（订单状态、审批流程）
 - 提醒通知（会议、待办事项）

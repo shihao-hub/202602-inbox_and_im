@@ -18,17 +18,17 @@
 
 #### 表结构
 
-| 字段名 | 类型 | 约束 | 默认值 | 说明 |
-|--------|------|------|--------|------|
-| id | UUID | PRIMARY KEY | gen_random_uuid() | 用户 ID |
-| username | VARCHAR(50) | NOT NULL, UNIQUE | - | 用户名 |
-| email | VARCHAR(100) | NOT NULL, UNIQUE | - | 邮箱 |
-| password_hash | VARCHAR(255) | NOT NULL | - | 密码哈希（bcrypt） |
-| avatar_url | VARCHAR(500) | NULL | - | 头像 URL |
-| status | ENUM | NOT NULL | 'offline' | 用户状态 |
-| last_login_at | TIMESTAMP | NULL | - | 最后登录时间 |
-| created_at | TIMESTAMP | NOT NULL | now() | 创建时间 |
-| updated_at | TIMESTAMP | NOT NULL | now() | 更新时间 |
+| 字段名           | 类型           | 约束               | 默认值               | 说明           |
+| ------------- | ------------ | ---------------- | ----------------- | ------------ |
+| id            | UUID         | PRIMARY KEY      | gen_random_uuid() | 用户 ID        |
+| username      | VARCHAR(50)  | NOT NULL, UNIQUE | -                 | 用户名          |
+| email         | VARCHAR(100) | NOT NULL, UNIQUE | -                 | 邮箱           |
+| password_hash | VARCHAR(255) | NOT NULL         | -                 | 密码哈希（bcrypt） |
+| avatar_url    | VARCHAR(500) | NULL             | -                 | 头像 URL       |
+| status        | ENUM         | NOT NULL         | 'offline'         | 用户状态         |
+| last_login_at | TIMESTAMP    | NULL             | -                 | 最后登录时间       |
+| created_at    | TIMESTAMP    | NOT NULL         | now()             | 创建时间         |
+| updated_at    | TIMESTAMP    | NOT NULL         | now()             | 更新时间         |
 
 #### 索引
 
@@ -39,12 +39,12 @@
 
 #### 用户状态枚举 (UserStatus)
 
-| 值 | 说明 |
-|----|------|
-| online | 在线 |
-| offline | 离线 |
-| away | 离开 |
-| busy | 忙碌 |
+| 值       | 说明  |
+| ------- | --- |
+| online  | 在线  |
+| offline | 离线  |
+| away    | 离开  |
+| busy    | 忙碌  |
 
 #### 关系
 
@@ -79,17 +79,17 @@ CREATE INDEX idx_users_id ON users(id);
 
 #### 表结构
 
-| 字段名 | 类型 | 约束 | 默认值 | 说明 |
-|--------|------|------|--------|------|
-| id | UUID | PRIMARY KEY | gen_random_uuid() | 站内信 ID |
-| type | VARCHAR(50) | NOT NULL | - | 站内信类型 |
-| title | VARCHAR(200) | NOT NULL | - | 标题 |
-| content | TEXT | NOT NULL | - | 内容 |
-| action_url | VARCHAR(500) | NULL | - | 点击跳转链接 |
-| priority | INTEGER | NOT NULL | 0 | 优先级 |
-| created_by | UUID | FOREIGN KEY | NULL | 创建者 ID |
-| created_at | TIMESTAMP | NOT NULL | now() | 创建时间 |
-| expires_at | TIMESTAMP | NULL | - | 过期时间 |
+| 字段名        | 类型           | 约束          | 默认值               | 说明     |
+| ---------- | ------------ | ----------- | ----------------- | ------ |
+| id         | UUID         | PRIMARY KEY | gen_random_uuid() | 站内信 ID |
+| type       | VARCHAR(50)  | NOT NULL    | -                 | 站内信类型  |
+| title      | VARCHAR(200) | NOT NULL    | -                 | 标题     |
+| content    | TEXT         | NOT NULL    | -                 | 内容     |
+| action_url | VARCHAR(500) | NULL        | -                 | 点击跳转链接 |
+| priority   | INTEGER      | NOT NULL    | 0                 | 优先级    |
+| created_by | UUID         | FOREIGN KEY | NULL              | 创建者 ID |
+| created_at | TIMESTAMP    | NOT NULL    | now()             | 创建时间   |
+| expires_at | TIMESTAMP    | NULL        | -                 | 过期时间   |
 
 #### 索引
 
@@ -99,20 +99,20 @@ CREATE INDEX idx_users_id ON users(id);
 
 #### 站内信类型 (NotificationType)
 
-| 值 | 说明 |
-|----|------|
-| system | 系统通知 |
-| business | 业务通知 |
-| reminder | 提醒通知 |
-| announcement | 公告 |
+| 值            | 说明   |
+| ------------ | ---- |
+| system       | 系统通知 |
+| business     | 业务通知 |
+| reminder     | 提醒通知 |
+| announcement | 公告   |
 
 #### 优先级 (NotificationPriority)
 
-| 值 | 说明 |
-|----|------|
-| 0 | 普通 |
-| 1 | 重要 |
-| 2 | 紧急 |
+| 值   | 说明  |
+| --- | --- |
+| 0   | 普通  |
+| 1   | 重要  |
+| 2   | 紧急  |
 
 #### 关系
 
@@ -146,16 +146,16 @@ CREATE INDEX idx_notifications_id ON notifications(id);
 
 #### 表结构
 
-| 字段名 | 类型 | 约束 | 默认值 | 说明 |
-|--------|------|------|--------|------|
-| id | UUID | PRIMARY KEY | gen_random_uuid() | 记录 ID |
-| notification_id | UUID | FOREIGN KEY | NOT NULL | 站内信 ID |
-| user_id | UUID | FOREIGN KEY | NOT NULL | 用户 ID |
-| is_read | BOOLEAN | NOT NULL | FALSE | 是否已读 |
-| read_at | TIMESTAMP | NULL | - | 阅读时间 |
-| is_deleted | BOOLEAN | NOT NULL | FALSE | 是否已删除 |
-| deleted_at | TIMESTAMP | NULL | - | 删除时间 |
-| created_at | TIMESTAMP | NOT NULL | now() | 创建时间 |
+| 字段名             | 类型        | 约束          | 默认值               | 说明     |
+| --------------- | --------- | ----------- | ----------------- | ------ |
+| id              | UUID      | PRIMARY KEY | gen_random_uuid() | 记录 ID  |
+| notification_id | UUID      | FOREIGN KEY | NOT NULL          | 站内信 ID |
+| user_id         | UUID      | FOREIGN KEY | NOT NULL          | 用户 ID  |
+| is_read         | BOOLEAN   | NOT NULL    | FALSE             | 是否已读   |
+| read_at         | TIMESTAMP | NULL        | -                 | 阅读时间   |
+| is_deleted      | BOOLEAN   | NOT NULL    | FALSE             | 是否已删除  |
+| deleted_at      | TIMESTAMP | NULL        | -                 | 删除时间   |
+| created_at      | TIMESTAMP | NOT NULL    | now()             | 创建时间   |
 
 #### 唯一约束
 
@@ -226,11 +226,13 @@ CREATE INDEX idx_notification_records_user_unread ON notification_records(user_i
 将站内信内容（`notifications`）和用户记录（`notification_records`）分开存储：
 
 **优点**:
+
 - 避免数据冗余（相同内容只存储一次）
 - 便于修改站内信内容（不影响已发送的记录）
 - 节省存储空间
 
 **缺点**:
+
 - 需要关联查询（性能影响较小，有索引优化）
 
 ### 2. 软删除
@@ -238,11 +240,13 @@ CREATE INDEX idx_notification_records_user_unread ON notification_records(user_i
 用户删除站内信时使用软删除（标记 `is_deleted=True`）而非物理删除：
 
 **优点**:
+
 - 数据可恢复
 - 保留审计日志
 - 可用于统计分析
 
 **缺点**:
+
 - 需要定期清理历史数据
 - 查询时需要过滤已删除数据
 
@@ -254,12 +258,14 @@ CREATE INDEX idx_notification_records_user_unread ON notification_records(user_i
 ### 4. 索引优化
 
 主要查询场景：
+
 - 按用户查询站内信（`user_id`）
 - 按类型筛选站内信（`type`）
 - 按已读/未读筛选（`is_read`）
 - 按时间排序（`created_at`）
 
 索引设计：
+
 - 所有外键字段建立索引
 - 常用查询字段建立索引
 - 复合索引用于复杂查询
@@ -370,16 +376,19 @@ psql -U postgres inbox_im < backup.sql
 建议监控以下数据库指标：
 
 1. **性能指标**
+   
    - 查询响应时间
    - 慢查询日志
    - 连接池使用率
 
 2. **存储指标**
+   
    - 表大小增长
    - 索引大小
    - 磁盘使用率
 
 3. **业务指标**
+   
    - 站内信发送量
    - 用户活跃度
    - 未读站内信数量分布

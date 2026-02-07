@@ -28,13 +28,13 @@
 
 ### 1.2 技术选型
 
-| 组件 | 技术选型 | 说明 |
-|------|---------|------|
-| WebSocket | `fastapi.WebSocket` | FastAPI 原生支持 |
-| 连接管理 | 内存 + Redis | 单机内存管理，Redis 支持分布式 |
-| 在线状态 | Redis Set | 存储在线用户列表 |
-| 消息存储 | PostgreSQL | 持久化聊天消息 |
-| 心跳机制 | 定时 Ping/Pong | 30 秒间隔 |
+| 组件        | 技术选型                | 说明                 |
+| --------- | ------------------- | ------------------ |
+| WebSocket | `fastapi.WebSocket` | FastAPI 原生支持       |
+| 连接管理      | 内存 + Redis          | 单机内存管理，Redis 支持分布式 |
+| 在线状态      | Redis Set           | 存储在线用户列表           |
+| 消息存储      | PostgreSQL          | 持久化聊天消息            |
+| 心跳机制      | 定时 Ping/Pong        | 30 秒间隔             |
 
 ---
 
@@ -233,12 +233,12 @@ class ConnectionManager:
 
 ### 4.1 重连规则
 
-| 重连次数 | 等待时间 |
-|---------|---------|
-| 第 1 次 | 立即重连 |
-| 第 2 次 | 2 秒后 |
-| 第 3 次 | 5 秒后 |
-| 第 4 次 | 10 秒后 |
+| 重连次数     | 等待时间       |
+| -------- | ---------- |
+| 第 1 次    | 立即重连       |
+| 第 2 次    | 2 秒后       |
+| 第 3 次    | 5 秒后       |
+| 第 4 次    | 10 秒后      |
 | 第 5 次及以后 | 每 30 秒重连一次 |
 
 ### 4.2 实现示例（客户端）
@@ -285,14 +285,14 @@ CREATE INDEX idx_friendships_status ON friendships(status);
 
 **字段说明**:
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | UUID | 主键 |
-| user_id | UUID | 用户 ID |
-| friend_id | UUID | 好友 ID |
-| status | VARCHAR(20) | 关系状态 |
-| created_at | TIMESTAMP | 创建时间 |
-| updated_at | TIMESTAMP | 更新时间 |
+| 字段         | 类型          | 说明    |
+| ---------- | ----------- | ----- |
+| id         | UUID        | 主键    |
+| user_id    | UUID        | 用户 ID |
+| friend_id  | UUID        | 好友 ID |
+| status     | VARCHAR(20) | 关系状态  |
+| created_at | TIMESTAMP   | 创建时间  |
+| updated_at | TIMESTAMP   | 更新时间  |
 
 **关系状态**:
 
@@ -331,19 +331,19 @@ CREATE INDEX idx_chat_messages_conversation ON chat_messages(
 
 **字段说明**:
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | UUID | 主键 |
-| sender_id | UUID | 发送者 ID |
-| receiver_id | UUID | 接收者 ID |
-| message_type | VARCHAR(20) | 消息类型 |
-| content | TEXT | 消息内容 |
-| file_url | VARCHAR(500) | 文件 URL（可选） |
-| is_read | BOOLEAN | 是否已读 |
-| read_at | TIMESTAMP | 阅读时间 |
-| is_deleted | BOOLEAN | 是否已删除 |
-| deleted_at | TIMESTAMP | 删除时间 |
-| created_at | TIMESTAMP | 创建时间 |
+| 字段           | 类型           | 说明         |
+| ------------ | ------------ | ---------- |
+| id           | UUID         | 主键         |
+| sender_id    | UUID         | 发送者 ID     |
+| receiver_id  | UUID         | 接收者 ID     |
+| message_type | VARCHAR(20)  | 消息类型       |
+| content      | TEXT         | 消息内容       |
+| file_url     | VARCHAR(500) | 文件 URL（可选） |
+| is_read      | BOOLEAN      | 是否已读       |
+| read_at      | TIMESTAMP    | 阅读时间       |
+| is_deleted   | BOOLEAN      | 是否已删除      |
+| deleted_at   | TIMESTAMP    | 删除时间       |
+| created_at   | TIMESTAMP    | 创建时间       |
 
 **消息类型**:
 
@@ -624,37 +624,37 @@ async def websocket_chat(websocket: WebSocket, db: Session = Depends(get_db)):
 
 ### 9.1 好友关系 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/v1/friends/request | 发送好友请求 |
-| POST | /api/v1/friends/{id}/accept | 接受好友请求 |
-| POST | /api/v1/friends/{id}/reject | 拒绝好友请求 |
-| DELETE | /api/v1/friends/{id} | 删除好友 |
-| GET | /api/v1/friends | 获取好友列表 |
-| GET | /api/v1/friends/pending | 获取待处理的好友请求 |
+| 方法     | 路径                          | 说明         |
+| ------ | --------------------------- | ---------- |
+| POST   | /api/v1/friends/request     | 发送好友请求     |
+| POST   | /api/v1/friends/{id}/accept | 接受好友请求     |
+| POST   | /api/v1/friends/{id}/reject | 拒绝好友请求     |
+| DELETE | /api/v1/friends/{id}        | 删除好友       |
+| GET    | /api/v1/friends             | 获取好友列表     |
+| GET    | /api/v1/friends/pending     | 获取待处理的好友请求 |
 
 ### 9.2 聊天消息 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/v1/messages/{user_id} | 获取与某用户的聊天记录 |
-| POST | /api/v1/messages/{user_id} | 发送消息（离线时使用） |
-| POST | /api/v1/messages/{id}/read | 标记消息为已读 |
-| GET | /api/v1/messages/unread-count | 获取未读消息数量 |
-| DELETE | /api/v1/messages/{id} | 删除消息 |
+| 方法     | 路径                            | 说明          |
+| ------ | ----------------------------- | ----------- |
+| GET    | /api/v1/messages/{user_id}    | 获取与某用户的聊天记录 |
+| POST   | /api/v1/messages/{user_id}    | 发送消息（离线时使用） |
+| POST   | /api/v1/messages/{id}/read    | 标记消息为已读     |
+| GET    | /api/v1/messages/unread-count | 获取未读消息数量    |
+| DELETE | /api/v1/messages/{id}         | 删除消息        |
 
 ### 9.3 群组 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/v1/groups | 创建群组 |
-| GET | /api/v1/groups | 获取群组列表 |
-| GET | /api/v1/groups/{id} | 获取群组详情 |
-| PUT | /api/v1/groups/{id} | 更新群组信息 |
-| DELETE | /api/v1/groups/{id} | 解散群组 |
-| POST | /api/v1/groups/{id}/members | 添加群成员 |
-| DELETE | /api/v1/groups/{id}/members/{user_id} | 移除群成员 |
-| GET | /api/v1/groups/{id}/messages | 获取群组消息记录 |
+| 方法     | 路径                                    | 说明       |
+| ------ | ------------------------------------- | -------- |
+| POST   | /api/v1/groups                        | 创建群组     |
+| GET    | /api/v1/groups                        | 获取群组列表   |
+| GET    | /api/v1/groups/{id}                   | 获取群组详情   |
+| PUT    | /api/v1/groups/{id}                   | 更新群组信息   |
+| DELETE | /api/v1/groups/{id}                   | 解散群组     |
+| POST   | /api/v1/groups/{id}/members           | 添加群成员    |
+| DELETE | /api/v1/groups/{id}/members/{user_id} | 移除群成员    |
+| GET    | /api/v1/groups/{id}/messages          | 获取群组消息记录 |
 
 ---
 
@@ -743,18 +743,21 @@ def send_message_to_offline_users(message: dict, user_ids: list):
 ## 十三、实施步骤
 
 ### Phase 1: WebSocket 基础（必须）
+
 - [ ] 实现 WebSocket 连接管理器
 - [ ] 实现认证流程
 - [ ] 实现心跳机制
 - [ ] 实现重连策略
 
 ### Phase 2: 好友系统（必须）
+
 - [ ] 创建好友关系表
 - [ ] 实现好友请求 API
 - [ ] 实现好友列表 API
 - [ ] 实现在线状态查询
 
 ### Phase 3: 单聊功能（必须）
+
 - [ ] 创建聊天消息表
 - [ ] 实现发送/接收消息
 - [ ] 实现消息已读状态
@@ -762,12 +765,14 @@ def send_message_to_offline_users(message: dict, user_ids: list):
 - [ ] 实现正在输入状态
 
 ### Phase 4: 群聊功能（可选）
+
 - [ ] 创建群组相关表
 - [ ] 实现群组管理 API
 - [ ] 实现群组消息
 - [ ] 实现群组成员管理
 
 ### Phase 5: 高级功能（可选）
+
 - [ ] 文件上传/分享
 - [ ] 语音消息
 - [ ] 消息搜索
@@ -805,6 +810,17 @@ wscat -c "ws://localhost:8000/api/v1/ws/chat"
 ## 十五、相关文档
 
 - [API 文档](./api-documentation.md)
+
 - [数据库设计文档](./database-schema.md)
+
 - [站内信类型说明](./notification-types.md)
+
+- [README](../README.md)
+
+- [API 文档](./api-documentation.md)
+
+- [数据库设计文档](./database-schema.md)
+
+- [站内信类型说明](./notification-types.md)
+
 - [README](../README.md)
