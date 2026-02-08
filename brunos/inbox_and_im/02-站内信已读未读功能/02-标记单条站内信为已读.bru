@@ -15,6 +15,35 @@ headers {
   Accept: application/json
 }
 
+script:pre-request {
+  // 先获取站内信列表，提取第一条记录的 ID
+  const host = bru.getVar("host");
+  const response = await http.request({
+    method: "GET",
+    url: `${host}/api/v1/notifications?page=1&page_size=1`,
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0",
+      "Accept": "application/json"
+    }
+  });
+
+  if (response.status !== 200) {
+    console.error("❌ 获取站内信列表失败，无法继续测试");
+    bru.setNextRequest(false);
+    return;
+  }
+
+  const data = response.body;
+  if (data.items && data.items.length > 0) {
+    const recordId = data.items[0].id;
+    bru.setVar("recordId", recordId);
+    console.log("📌 获取到站内信记录 ID:", recordId);
+  } else {
+    console.error("❌ 站内信列表为空，请先运行「01-站内信完整流程」创建站内信");
+    bru.setNextRequest(false);
+  }
+}
+
 script:post-response {
   // 检查请求是否成功
   if (res.getStatus() !== 204) {
