@@ -1,0 +1,48 @@
+meta {
+  name: 筛选已读站内信列表
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{host}}/api/v1/notifications?is_read=true&page=1&page_size=20
+  body: none
+  auth: inherit
+}
+
+params:query {
+  is_read: true
+  page: 1
+  page_size: 20
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  // 检查请求是否成功
+  if (res.getStatus() !== 200) {
+    console.error("❌ 获取已读站内信列表失败，状态码:", res.getStatus());
+    console.error("响应:", res.getBody());
+    bru.setNextRequest(false);
+    return;
+  }
+
+  const data = res.getBody();
+  console.log("✅ 获取已读站内信列表成功");
+  console.log("📊 总数:", data.total);
+  console.log("📄 当前页:", data.items.length, "条");
+  console.log("📈 未读数量:", data.unread_count);
+
+  if (data.items.length > 0) {
+    console.log("📌 第一条已读站内信:");
+    console.log("   - ID:", data.items[0].id);
+    console.log("   - 标题:", data.items[0].notification?.title || "无标题");
+    console.log("   - 类型:", data.items[0].notification?.type || "unknown");
+    console.log("   - 已读时间:", data.items[0].read_at || "未记录");
+  } else {
+    console.log("📭 当前没有已读站内信");
+  }
+}

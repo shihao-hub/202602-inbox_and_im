@@ -1,0 +1,30 @@
+meta {
+  name: 全部标记已读
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/api/v1/notifications/read-all
+  body: none
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  // 检查请求是否成功
+  if (res.getStatus() !== 200) {
+    console.error("❌ 全部标记已读失败，状态码:", res.getStatus());
+    console.error("响应:", res.getBody());
+    bru.setNextRequest(false);
+    return;
+  }
+
+  const data = res.getBody();
+  console.log("✅ 全部标记已读成功");
+  console.log("📊 标记结果:", data.message);
+}

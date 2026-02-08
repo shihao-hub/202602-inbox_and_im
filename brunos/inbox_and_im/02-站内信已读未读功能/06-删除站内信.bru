@@ -1,0 +1,30 @@
+meta {
+  name: 删除站内信
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{host}}/api/v1/notifications/{{recordId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  // 检查请求是否成功
+  if (res.getStatus() !== 204) {
+    console.error("❌ 删除站内信失败，状态码:", res.getStatus());
+    console.error("响应:", res.getBody());
+    bru.setNextRequest(false);
+    return;
+  }
+
+  console.log("✅ 删除站内信成功（软删除）");
+  console.log("📌 已删除的站内信记录 ID:", bru.getVar("recordId"));
+  console.log("ℹ️ 注意：站内信已被标记为删除状态，但不会从数据库中物理删除");
+}

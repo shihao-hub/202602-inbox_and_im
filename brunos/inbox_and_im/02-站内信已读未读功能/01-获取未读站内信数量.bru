@@ -1,0 +1,38 @@
+meta {
+  name: 获取未读站内信数量
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/v1/notifications/unread-count
+  body: none
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  // 检查请求是否成功
+  if (res.getStatus() !== 200) {
+    console.error("❌ 获取未读数量失败，状态码:", res.getStatus());
+    console.error("响应:", res.getBody());
+    bru.setNextRequest(false);
+    return;
+  }
+
+  const data = res.getBody();
+  console.log("✅ 获取未读数量成功");
+  console.log("📊 未读站内信数量:", data.unread_count);
+
+  // 将未读数量保存到变量中，供后续测试使用
+  bru.setVar("unreadCount", data.unread_count);
+
+  // 如果没有未读消息，提示用户需要先创建站内信
+  if (data.unread_count === 0) {
+    console.warn("⚠️ 当前没有未读站内信，请先运行「01-站内信完整流程」创建和发送站内信");
+  }
+}

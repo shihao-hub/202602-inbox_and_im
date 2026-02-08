@@ -1,0 +1,29 @@
+meta {
+  name: 标记单条站内信为已读
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/api/v1/notifications/{{recordId}}/read
+  body: none
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  // 检查请求是否成功
+  if (res.getStatus() !== 204) {
+    console.error("❌ 标记已读失败，状态码:", res.getStatus());
+    console.error("响应:", res.getBody());
+    bru.setNextRequest(false);
+    return;
+  }
+
+  console.log("✅ 标记站内信为已读成功");
+  console.log("📌 站内信记录 ID:", bru.getVar("recordId"));
+}
