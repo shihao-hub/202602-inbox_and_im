@@ -16,6 +16,16 @@ headers {
 }
 
 script:post-response {
+  // 断言：检查请求是否成功
+  tests["状态码必须是 200"] = res.getStatus() === 200;
+
+  // 如果失败，停止执行后续请求
+  if (res.getStatus() !== 200) {
+    console.error("管理员获取站内信详情失败，状态码:", res.getStatus());
+    bru.setNextRequest(false);
+    return;
+  }
+
   const data = res.getBody();
   console.log("站内信详情:", data);
 }
