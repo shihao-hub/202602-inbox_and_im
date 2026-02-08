@@ -28,7 +28,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False, comment="密码哈希")
     avatar_url = Column(String(500), nullable=True, comment="头像 URL")
     status = Column(
-        SQLEnum(UserStatus),
+        SQLEnum(UserStatus, values_callable=lambda obj: [e.value for e in obj]),
         default=UserStatus.OFFLINE,
         nullable=False,
         comment="用户状态",
