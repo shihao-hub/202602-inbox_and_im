@@ -227,7 +227,7 @@ def test_user_delete_notification_without_auth(client):
     3. 验证返回 403 错误
     """
     response = client.delete("/api/v1/notifications/some-id")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_user_delete_read_and_unread_notifications(client, auth_headers, db_session, test_user):

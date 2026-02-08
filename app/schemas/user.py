@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field
+from uuid import UUID
+from pydantic import BaseModel, EmailStr, Field, field_serializer
 from app.models.user import UserStatus
 
 
@@ -22,7 +23,7 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     """用户响应"""
 
-    id: str
+    id: UUID
     username: str
     email: str
     avatar_url: Optional[str] = None
@@ -30,6 +31,11 @@ class UserResponse(BaseModel):
     last_login_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    @field_serializer('id')
+    def serialize_id(self, value: UUID) -> str:
+        """将 UUID 序列化为字符串"""
+        return str(value)
 
     class Config:
         from_attributes = True

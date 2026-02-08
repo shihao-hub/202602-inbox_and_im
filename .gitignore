@@ -59,3 +59,5 @@ Thumbs.db
 
 # Alembic
 alembic/versions/*.pyc
+
+nul

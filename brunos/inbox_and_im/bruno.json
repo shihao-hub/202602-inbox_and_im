@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "inbox_and_im",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,35 @@
+meta {
+  name: 获取当前用户的站内信列表
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/v1/notifications?page=1&page_size=20
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  page_size: 20
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+  Accept-Language: zh-CN,zh;q=0.9,zh-TW;q=0.8,zh-HK;q=0.7,en-US;q=0.6,en;q=0.5
+  Accept-Encoding: gzip, deflate, br, zstd
+  Referer: http://127.0.0.1:8000/docs
+  Connection: keep-alive
+  Cookie: csrftoken=sWKec4AemFsnbMoW4Q6F943t7fGcbBRh
+  Sec-Fetch-Dest: empty
+  Sec-Fetch-Mode: cors
+  Sec-Fetch-Site: same-origin
+  Priority: u=0
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}

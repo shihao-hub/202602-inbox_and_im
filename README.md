@@ -275,16 +275,58 @@ curl -X POST "http://localhost:8000/api/v1/notifications/<record_id>/read" \
 
 ## 运行测试
 
+### 运行所有测试
+
 ```bash
-# 运行所有测试
+# 运行所有单元测试
 pytest
 
+# 运行所有场景测试（推荐）
+pytest tests/scenarios/ -v
+
+# 运行所有测试
+pytest tests/ -v
+```
+
+### 运行特定测试
+
+```bash
 # 运行指定测试文件
 pytest tests/test_auth.py
+pytest tests/test_notifications.py
 
+# 运行指定场景测试
+pytest tests/scenarios/test_user_registration_and_login.py -v
+pytest tests/scenarios/test_admin_create_and_send_notification.py -v
+
+# 使用关键字过滤测试
+pytest tests/scenarios/ -k "register" -v
+pytest tests/scenarios/ -k "send" -v
+```
+
+### 查看测试覆盖率
+
+```bash
 # 查看测试覆盖率
 pytest --cov=app --cov-report=html
+
+# 查看覆盖率报告
+# 打开 htmlcov/index.html
 ```
+
+### 场景测试说明
+
+项目包含完整的基于场景的测试,每个测试文件代表一个完整的用户行为流程:
+
+- **test_user_registration_and_login.py**: 用户注册登录场景
+- **test_admin_create_and_send_notification.py**: 管理员创建发送站内信
+- **test_user_receive_and_read_notifications.py**: 用户接收阅读站内信
+- **test_user_batch_manage_notifications.py**: 用户批量管理站内信
+- **test_admin_edit_notifications.py**: 管理员编辑站内信
+- **test_user_delete_notifications.py**: 用户删除站内信
+- **test_notification_filtering.py**: 站内信筛选功能
+
+详细的测试说明请参考: [tests/scenarios/README.md](tests/scenarios/README.md)
 
 ## 数据库设计
 

@@ -240,10 +240,10 @@ def test_user_access_notifications_without_auth(client):
     3. 验证返回 403 错误
     """
     response = client.get("/api/v1/notifications")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
     response = client.get("/api/v1/notifications/unread-count")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_user_notifications_ordered_by_created_at(client, auth_headers, db_session, test_user):

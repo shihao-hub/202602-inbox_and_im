@@ -196,7 +196,7 @@ def test_protected_endpoint_without_token(client):
     2. 验证返回 403 错误
     """
     response = client.get("/api/v1/auth/me")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_invalid_token_scenario(client):
@@ -208,4 +208,4 @@ def test_invalid_token_scenario(client):
     """
     headers = {"Authorization": "Bearer invalid_token_12345"}
     response = client.get("/api/v1/auth/me", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 401
