@@ -275,7 +275,48 @@ curl -X POST "http://localhost:8000/api/v1/notifications/<record_id>/read" \
 
 ## 运行测试
 
-### 运行所有测试
+### 使用 Bruno 进行 API 测试
+
+项目包含完整的 Bruno 测试套件，可以方便地测试 API 接口。
+
+#### 安装 Bruno
+
+```bash
+# 使用 npm 安装
+npm install -g @usebruno/cli
+
+# 或下载 Bruno 桌面版
+# https://www.usebruno.com/downloads.html
+```
+
+#### 运行用户故事测试
+
+```bash
+# 使用 CLI 运行用户故事 1（完整站内信流程）
+bru run "brunos/inbox_and_im/用户故事 1"
+
+# 或在 Bruno 桌面版中打开文件夹
+# brunos/inbox_and_im/
+```
+
+#### 用户故事测试流程
+
+**用户故事 1：站内信完整流程**
+
+1. **管理员创建站内信** - 创建一条测试站内信，并提取 `notificationId`
+2. **管理员发送站内信给用户** - 使用 `notificationId` 发送给所有用户
+3. **用户获取站内信列表** - 获取当前用户的站内信，并提取 `recordId`
+4. **用户获取站内信详情** - 使用 `recordId` 获取详情
+5. **管理员获取站内信列表** - 管理端查看所有站内信
+6. **管理员获取站内信详情** - 使用 `notificationId` 查看详情
+
+#### 临时禁用认证
+
+当前测试环境已临时禁用 JWT 认证（`app/dependencies.py` 中的 `DISABLE_AUTH = True`），使用默认测试用户 `test_user`。
+
+**注意**：生产环境请务必启用认证（设置 `DISABLE_AUTH = False`）！
+
+### 运行 pytest 测试
 
 ```bash
 # 运行所有单元测试
@@ -314,7 +355,7 @@ pytest --cov=app --cov-report=html
 # 打开 htmlcov/index.html
 ```
 
-### 场景测试说明
+### pytest 场景测试说明
 
 项目包含完整的基于场景的测试,每个测试文件代表一个完整的用户行为流程:
 
