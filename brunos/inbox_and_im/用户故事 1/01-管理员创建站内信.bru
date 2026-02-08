@@ -1,0 +1,37 @@
+meta {
+  name: 管理员创建站内信
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/api/v1/admin/notifications
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "type": "system",
+    "title": "测试站内信",
+    "content": "这是一条测试站内信，用于验证站内信功能是否正常工作。",
+    "action_url": "https://example.com/notification",
+    "priority": 1,
+    "expires_at": null
+  }
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+  Content-Type: application/json
+}
+
+script:post-response {
+  // 提取创建的站内信 ID，供后续请求使用
+  const data = res.getBody();
+  if (data.id) {
+    bru.setVar("notificationId", data.id);
+    console.log("站内信创建成功，ID:", data.id);
+  }
+}

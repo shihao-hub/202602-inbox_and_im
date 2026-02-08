@@ -1,0 +1,26 @@
+meta {
+  name: 管理员获取站内信列表
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{host}}/api/v1/admin/notifications?skip=0&limit=20
+  body: none
+  auth: inherit
+}
+
+params:query {
+  skip: 0
+  limit: 20
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  const data = res.getBody();
+  console.log("管理员获取站内信列表，共", data.total, "条");
+}

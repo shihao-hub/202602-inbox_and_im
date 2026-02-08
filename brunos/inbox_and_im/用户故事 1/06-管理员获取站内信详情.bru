@@ -1,0 +1,21 @@
+meta {
+  name: 管理员获取站内信详情
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{host}}/api/v1/admin/notifications/{{notificationId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  const data = res.getBody();
+  console.log("站内信详情:", data);
+}

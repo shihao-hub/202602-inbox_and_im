@@ -1,0 +1,31 @@
+meta {
+  name: 用户获取站内信列表
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/v1/notifications?page=1&page_size=20
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  page_size: 20
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  // 提取第一条站内信记录的 ID，供后续获取详情使用
+  const data = res.getBody();
+  if (data.items && data.items.length > 0) {
+    bru.setVar("recordId", data.items[0].id);
+    console.log("获取到站内信列表，共", data.total, "条，未读", data.unread_count, "条");
+    console.log("第一条记录 ID:", data.items[0].id);
+  }
+}

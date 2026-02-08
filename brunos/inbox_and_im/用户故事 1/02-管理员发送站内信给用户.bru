@@ -1,0 +1,30 @@
+meta {
+  name: 管理员发送站内信给用户
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/api/v1/admin/notifications/{{notificationId}}/send
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "user_ids": [],
+    "send_to_all": true
+  }
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+  Content-Type: application/json
+}
+
+script:post-response {
+  // 发送成功，记录信息
+  const data = res.getBody();
+  console.log("站内信发送结果:", data);
+}
