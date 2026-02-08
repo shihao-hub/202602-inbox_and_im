@@ -32,6 +32,7 @@ def _get_or_create_default_user(db: Session) -> User:
         username="test_user",
         email="test@example.com",
         password_hash="dummy_hash",  # 临时使用，不验证密码
+        status="offline",  # 使用小写字符串匹配数据库枚举值
     )
     db.add(default_user)
     db.commit()
