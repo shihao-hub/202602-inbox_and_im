@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from uuid import UUID
+from pydantic import BaseModel, Field, field_serializer
 from app.models.notification import NotificationType
 
 
@@ -36,15 +37,20 @@ class NotificationSendRequest(BaseModel):
 class NotificationResponse(BaseModel):
     """站内信响应"""
 
-    id: str
+    id: UUID
     type: str
     title: str
     content: str
     action_url: Optional[str] = None
     priority: int
-    created_by: Optional[str] = None
+    created_by: Optional[UUID] = None
     created_at: datetime
     expires_at: Optional[datetime] = None
+
+    @field_serializer('id', 'created_by')
+    def serialize_uuid(self, value: Optional[UUID]) -> Optional[str]:
+        """将 UUID 序列化为字符串"""
+        return str(value) if value else None
 
     class Config:
         from_attributes = True
@@ -60,11 +66,16 @@ class NotificationListResponse(BaseModel):
 class NotificationRecordResponse(BaseModel):
     """站内信记录响应（用户端）"""
 
-    id: str
+    id: UUID
     notification: NotificationResponse
     is_read: bool
     read_at: Optional[datetime] = None
     created_at: datetime
+
+    @field_serializer('id')
+    def serialize_uuid(self, value: UUID) -> str:
+        """将 UUID 序列化为字符串"""
+        return str(value)
 
     class Config:
         from_attributes = True
