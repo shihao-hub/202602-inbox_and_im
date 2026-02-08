@@ -68,3 +68,66 @@ def auth_headers(client, test_user):
     )
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_user(db_session):
+    """创建管理员用户（目前所有用户都有管理员权限）"""
+    from app.models.user import User
+    from app.core.security import get_password_hash
+
+    user = User(
+        username="admin",
+        email="admin@example.com",
+        password_hash=get_password_hash("adminpass123"),
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def admin_auth_headers(client, admin_user):
+    """获取管理员认证头"""
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": "admin", "password": "adminpass123"}
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def multiple_users(db_session):
+    """创建多个测试用户"""
+    from app.models.user import User
+    from app.core.security import get_password_hash
+
+    users = []
+    for i in range(5):
+        user = User(
+            username=f"user{i}",
+            email=f"user{i}@example.com",
+            password_hash=get_password_hash("password123"),
+        )
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+        users.append(user)
+
+    return users
+
+
+@pytest.fixture
+def user_auth_headers(client, multiple_users):
+    """获取多个用户的认证头"""
+    headers_list = []
+    for i in range(len(multiple_users)):
+        response = client.post(
+            "/api/v1/auth/login",
+            json={"username": f"user{i}", "password": "password123"}
+        )
+        token = response.json()["access_token"]
+        headers_list.append({"Authorization": f"Bearer {token}"})
+    return headers_list
