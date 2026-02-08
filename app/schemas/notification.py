@@ -30,7 +30,7 @@ class NotificationUpdate(BaseModel):
 class NotificationSendRequest(BaseModel):
     """发送站内信请求"""
 
-    user_ids: List[str] = Field(..., min_items=1, description="用户 ID 列表")
+    user_ids: List[str] = Field(default_factory=list, description="用户 ID 列表（send_to_all=False 时必填）")
     send_to_all: bool = Field(default=False, description="是否发送给所有用户")
 
 

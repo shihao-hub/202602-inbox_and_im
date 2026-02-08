@@ -133,11 +133,18 @@ async def send_notification(
     发送站内信给用户（管理端）
 
     - **notification_id**: 站内信 ID
-    - **user_ids**: 用户 ID 列表
+    - **user_ids**: 用户 ID 列表（send_to_all=False 时必填）
     - **send_to_all**: 是否发送给所有用户（如果为 True，则忽略 user_ids）
 
     返回成功发送的用户数量
     """
+    # 验证：如果不是发送给所有人，则必须提供 user_ids
+    if not send_request.send_to_all and not send_request.user_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="send_to_all=False 时，user_ids 不能为空",
+        )
+
     if send_request.send_to_all:
         count = NotificationService.send_to_all_users(db, notification_id)
     else:
