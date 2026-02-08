@@ -35,17 +35,17 @@ app.include_router(
 )
 
 
-# @app.get("/")
-# async def root():
-#     """根路径"""
-#     return {
-#         "message": "欢迎使用站内信与即时通讯系统 API",
-#         "version": settings.APP_VERSION,
-#         "docs": "/docs",
-#     }
+@app.get("/")
+async def root():
+    """根路径"""
+    return {
+        "message": "欢迎使用站内信与即时通讯系统 API",
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+    }
 
 
-# @app.get("/health")
-# async def health_check():
-#     """健康检查"""
-#     return {"status": "ok"}
+@app.get("/health")
+async def health_check():
+    """健康检查"""
+    return {"status": "ok"}
