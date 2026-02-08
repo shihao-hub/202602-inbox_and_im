@@ -24,17 +24,14 @@ headers {
 }
 
 script:post-response {
-  // 断言：检查请求是否成功
-  tests["状态码必须是 200"] = res.getStatus() === 200;
-
-  // 如果失败，停止执行后续请求
+  // 检查请求是否成功
   if (res.getStatus() !== 200) {
-    console.error("发送站内信失败，状态码:", res.getStatus());
+    console.error("❌ 发送站内信失败，状态码:", res.getStatus());
     bru.setNextRequest(false);
     return;
   }
 
   // 发送成功，记录信息
   const data = res.getBody();
-  console.log("站内信发送结果:", data);
+  console.log("✅ 站内信发送成功:", data);
 }

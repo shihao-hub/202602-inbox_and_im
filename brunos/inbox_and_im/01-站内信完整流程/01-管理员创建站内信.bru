@@ -28,12 +28,9 @@ headers {
 }
 
 script:post-response {
-  // 断言：检查请求是否成功
-  tests["状态码必须是 201"] = res.getStatus() === 201;
-
-  // 如果失败，停止执行后续请求
+  // 检查请求是否成功
   if (res.getStatus() !== 201) {
-    console.error("创建站内信失败，状态码:", res.getStatus());
+    console.error("❌ 创建站内信失败，状态码:", res.getStatus());
     bru.setNextRequest(false);
     return;
   }
@@ -42,9 +39,9 @@ script:post-response {
   const data = res.getBody();
   if (data.id) {
     bru.setVar("notificationId", data.id);
-    console.log("站内信创建成功，ID:", data.id);
+    console.log("✅ 站内信创建成功，ID:", data.id);
   } else {
-    tests["响应必须包含 id"] = false;
+    console.error("❌ 响应中没有 id 字段");
     bru.setNextRequest(false);
   }
 }

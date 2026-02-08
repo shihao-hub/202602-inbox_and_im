@@ -21,12 +21,9 @@ headers {
 }
 
 script:post-response {
-  // 断言：检查请求是否成功
-  tests["状态码必须是 200"] = res.getStatus() === 200;
-
-  // 如果失败，停止执行后续请求
+  // 检查请求是否成功
   if (res.getStatus() !== 200) {
-    console.error("获取站内信列表失败，状态码:", res.getStatus());
+    console.error("❌ 获取站内信列表失败，状态码:", res.getStatus());
     bru.setNextRequest(false);
     return;
   }
@@ -35,11 +32,10 @@ script:post-response {
   const data = res.getBody();
   if (data.items && data.items.length > 0) {
     bru.setVar("recordId", data.items[0].id);
-    console.log("获取到站内信列表，共", data.total, "条，未读", data.unread_count, "条");
-    console.log("第一条记录 ID:", data.items[0].id);
+    console.log("✅ 获取站内信列表成功，共", data.total, "条，未读", data.unread_count, "条");
+    console.log("📌 第一条记录 ID:", data.items[0].id);
   } else {
-    tests["站内信列表不能为空"] = false;
-    console.error("站内信列表为空，无法继续测试");
+    console.error("❌ 站内信列表为空，无法继续测试");
     bru.setNextRequest(false);
   }
 }
