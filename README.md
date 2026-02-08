@@ -292,8 +292,8 @@ npm install -g @usebruno/cli
 #### 运行用户故事测试
 
 ```bash
-# 使用 CLI 运行用户故事 1（完整站内信流程）
-bru run "brunos/inbox_and_im/用户故事 1"
+# 使用 CLI 运行站内信完整流程测试
+bru run "brunos/inbox_and_im/01-站内信完整流程"
 
 # 或在 Bruno 桌面版中打开文件夹
 # brunos/inbox_and_im/
@@ -301,7 +301,7 @@ bru run "brunos/inbox_and_im/用户故事 1"
 
 #### 用户故事测试流程
 
-**用户故事 1：站内信完整流程**
+**01-站内信完整流程**
 
 1. **管理员创建站内信** - 创建一条测试站内信，并提取 `notificationId`
 2. **管理员发送站内信给用户** - 使用 `notificationId` 发送给所有用户
