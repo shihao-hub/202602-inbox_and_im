@@ -7,10 +7,11 @@ from app.core.database import get_db
 from app.core.security import verify_access_token
 from app.models.user import User
 
-security = HTTPBearer()
-
 # 临时禁用认证的开关
 DISABLE_AUTH = True
+
+# 创建可选的 HTTPBearer（auto_error=False 允许没有 Authorization 头）
+security = HTTPBearer(auto_error=False)
 
 
 def _get_or_create_default_user(db: Session) -> User:
@@ -51,6 +52,10 @@ def get_current_user_optional(
     if DISABLE_AUTH:
         return _get_or_create_default_user(db)
 
+    # 处理没有提供 Authorization 头的情况
+    if credentials is None:
+        return None
+
     try:
         token = credentials.credentials
         payload = verify_access_token(token)
@@ -88,6 +93,10 @@ def get_current_user(
         detail="无法验证凭证",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    # 处理没有提供 Authorization 头的情况
+    if credentials is None:
+        raise credentials_exception
 
     token = credentials.credentials
     payload = verify_access_token(token)
