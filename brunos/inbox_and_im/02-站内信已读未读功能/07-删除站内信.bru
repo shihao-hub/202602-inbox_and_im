@@ -23,7 +23,7 @@ script:post-response {
     bru.setNextRequest(false);
     return;
   }
-
+  
   console.log("✅ 删除站内信成功（软删除）");
   console.log("📌 已删除的站内信记录 ID:", bru.getVar("recordId"));
   console.log("ℹ️ 注意：站内信已被标记为删除状态，但不会从数据库中物理删除");
