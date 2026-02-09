@@ -277,7 +277,7 @@ curl -X POST "http://localhost:8000/api/v1/notifications/<record_id>/read" \
 
 ### 使用 Bruno 进行 API 测试
 
-项目包含完整的 Bruno 测试套件，可以方便地测试 API 接口。
+项目包含完整的 Bruno 测试套件，参考 [bruno-tests](https://github.com/usebruno/bruno/tree/main/packages/bruno-tests) 项目结构实现。
 
 #### 安装 Bruno
 
@@ -289,26 +289,39 @@ npm install -g @usebruno/cli
 # https://www.usebruno.com/downloads.html
 ```
 
-#### 运行用户故事测试
+#### 测试目录结构
 
-```bash
-# 使用 CLI 运行站内信完整流程测试
-bru run "brunos/inbox_and_im/01-站内信完整流程"
-
-# 或在 Bruno 桌面版中打开文件夹
-# brunos/inbox_and_im/
+```
+brunos/inbox_and_im/
+├── auth/                  # 认证测试（注册、登录）
+├── admin/                 # 管理端 API 测试
+│   └── errors/           # 错误场景测试
+├── user/                 # 用户端 API 测试
+│   └── errors/           # 错误场景测试
+├── tests/                # 集成测试场景
+└── environments/         # 环境配置
 ```
 
-#### 用户故事测试流程
+#### 快速开始
 
-**01-站内信完整流程**
+1. **在 Bruno 中打开集合**
+   - 启动 Bruno 桌面版
+   - 打开 `brunos/inbox_and_im/` 目录
 
-1. **管理员创建站内信** - 创建一条测试站内信，并提取 `notificationId`
-2. **管理员发送站内信给用户** - 使用 `notificationId` 发送给所有用户
-3. **用户获取站内信列表** - 获取当前用户的站内信，并提取 `recordId`
-4. **用户获取站内信详情** - 使用 `recordId` 获取详情
-5. **管理员获取站内信列表** - 管理端查看所有站内信
-6. **管理员获取站内信详情** - 使用 `notificationId` 查看详情
+2. **运行认证测试**（按顺序执行）
+   - `auth/01-user-register.bru` - 注册测试用户
+   - `auth/02-user-login.bru` - 用户登录并获取 token
+   - `auth/03-admin-login.bru` - 管理员登录并获取 token
+
+3. **运行功能测试**
+   - 管理端：`admin/` 目录下的测试
+   - 用户端：`user/` 目录下的测试
+
+4. **运行集成测试**
+   - `tests/01-full-workflow.bru` - 完整流程测试
+   - `tests/02-priority-workflow.bru` - 优先级测试
+
+详细的测试说明请参考: [brunos/inbox_and_im/README.md](brunos/inbox_and_im/README.md)
 
 #### 临时禁用认证
 
