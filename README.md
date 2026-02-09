@@ -460,10 +460,18 @@ pytest --cov=app --cov-report=html
 
 ## 参考文档
 
+### 技术文档
 - [FastAPI 官方文档](https://fastapi.tiangolo.com/)
 - [SQLAlchemy 文档](https://docs.sqlalchemy.org/)
 - [Alembic 文档](https://alembic.sqlalchemy.org/)
 - [JWT 最佳实践](https://jwt.io/introduction)
+
+### 项目文档
+- [API 文档](docs/api-documentation.md)
+- [数据库设计](docs/database-schema.md)
+- [IM 设计方案](docs/im-design.md)
+- [通知类型说明](docs/notification-types.md)
+- [Bruno API 客户端调研](docs/bruno-api-client-research.md) - Bruno 使用场景、最佳实践和项目案例
 
 ## 许可证
 
