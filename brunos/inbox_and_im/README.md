@@ -12,8 +12,10 @@ inbox_and_im/
 ├── auth/                      # 认证测试
 │   ├── 01-user-register.bru  # 用户注册
 │   ├── 02-user-login.bru     # 用户登录
-│   └── 03-admin-login.bru    # 管理员登录
+│   ├── 03-admin-login.bru    # 管理员登录
+│   └── 04-get-current-user.bru # 获取当前用户信息
 ├── admin/                     # 管理端测试
+│   ├── 00-send-notification-workflow.bru # 发送通知工作流指南
 │   ├── 01-create-notification.bru
 │   ├── 02-create-business-notification.bru
 │   ├── 03-get-notifications.bru
@@ -66,10 +68,19 @@ vars {
 
 #### 完整测试流程
 
+**🚀 快速开始：发送通知工作流**
+
+最简单的方式是运行工作流测试：
+
+1. `admin/00-send-notification-workflow.bru` - 完整工作流指南（会自动注册用户并显示后续步骤）
+
+**📋 手动执行流程**
+
 1. **认证测试**（按顺序执行）：
-   - `auth/01-user-register.bru` - 注册测试用户
+   - `auth/01-user-register.bru` - 注册测试用户（自动设置 userId 和 userToken）
    - `auth/02-user-login.bru` - 用户登录并获取 token
    - `auth/03-admin-login.bru` - 管理员登录并获取 token
+   - `auth/04-get-current-user.bru` - 获取当前用户信息（设置 userId）
 
 2. **管理端测试**（需要管理员 token）：
    - `admin/01-create-notification.bru` - 创建站内信
@@ -129,11 +140,11 @@ vars {
 | 变量名 | 说明 | 来源 |
 |--------|------|------|
 | `adminToken` | 管理员 JWT token | `auth/03-admin-login.bru` |
-| `userToken` | 普通 JWT token | `auth/02-user-login.bru` |
+| `userToken` | 普通 JWT token | `auth/01-user-register.bru` 或 `auth/02-user-login.bru` |
 | `notificationId` | 站内信 ID | `admin/01-create-notification.bru` |
 | `businessNotificationId` | 业务类型站内信 ID | `admin/02-create-business-notification.bru` |
 | `notificationRecordId` | 用户站内信记录 ID | `user/01-get-notifications.bru` |
-| `userId` | 用户 ID | 需要手动设置 |
+| `userId` | 用户 ID | `auth/01-user-register.bru` 或 `auth/04-get-current-user.bru` |
 
 ## 测试场景
 
@@ -237,7 +248,12 @@ tests {
    - 检查 API 路径是否正确
    - 确认资源 ID 是否存在
 
-3. **测试失败**
+3. **userId 模板变量未替换（`{{userId}}`）**
+   - 确保已按顺序运行测试：`auth/01-user-register.bru` → `auth/03-admin-login.bru` → `admin/01-create-notification.bru` → `admin/06-send-notification-to-users.bru`
+   - 或运行 `admin/00-send-notification-workflow.bru` 获取完整指南
+   - 检查控制台是否输出 "✅ User ID saved"
+
+4. **测试失败**
    - 查看控制台输出的错误信息
    - 检查 API 服务是否正常运行
 
