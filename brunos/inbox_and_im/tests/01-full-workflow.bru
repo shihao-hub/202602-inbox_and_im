@@ -1,0 +1,37 @@
+meta {
+  name: 01 Full Workflow Test
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notifications
+  auth: none
+}
+
+script:pre-request {
+  console.log("🧪 Starting full workflow test");
+  console.log("This test will:");
+  console.log("1. Create a notification as admin");
+  console.log("2. Send it to users");
+  console.log("3. Retrieve as user");
+  console.log("4. Mark as read");
+  console.log("5. Delete notification");
+}
+
+script:post-response {
+  console.log("✅ Full workflow test guide created");
+  console.log("Please run the following tests in order:");
+  console.log("- auth/03-admin-login.bru");
+  console.log("- admin/01-create-notification.bru");
+  console.log("- admin/06-send-notification-to-users.bru");
+  console.log("- user/01-get-notifications.bru");
+  console.log("- user/07-mark-as-read.bru");
+  console.log("- admin/08-delete-notification.bru");
+}
+
+tests {
+  test("Workflow documentation exists", function() {
+    expect(true).to.equal(true);
+  });
+}

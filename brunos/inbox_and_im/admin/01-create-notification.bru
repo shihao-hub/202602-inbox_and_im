@@ -1,0 +1,62 @@
+meta {
+  name: 01 Create Notification 201
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/notifications
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "type": "system",
+    "title": "System Maintenance Notice",
+    "content": "The system will undergo maintenance on Sunday from 2:00 AM to 4:00 AM UTC.",
+    "action_url": "https://example.com/maintenance",
+    "priority": 1,
+    "expires_at": null
+  }
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+  Content-Type: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    const data = res.getBody();
+    if (data.id) {
+      bru.setVar("notificationId", data.id);
+      console.log("✅ Notification created successfully, ID:", data.id);
+    }
+  } else {
+    console.error("❌ Failed to create notification, status:", res.getStatus());
+    bru.setNextRequest(false);
+  }
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("Response has id", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("id");
+  });
+
+  test("Response has correct title", function() {
+    const data = res.getBody();
+    expect(data.title).to.equal("System Maintenance Notice");
+  });
+
+  test("Response has type system", function() {
+    const data = res.getBody();
+    expect(data.type).to.equal("system");
+  });
+}

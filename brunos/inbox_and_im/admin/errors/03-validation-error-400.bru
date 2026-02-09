@@ -1,0 +1,38 @@
+meta {
+  name: 03 Validation Error 400
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/notifications
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "type": "invalid_type",
+    "title": "",
+    "content": "Test",
+    "priority": 10
+  }
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+  Content-Type: application/json
+}
+
+tests {
+  test("Status is 422 or 400", function() {
+    const status = res.getStatus();
+    expect(status === 422 || status === 400).to.equal(true);
+  });
+
+  test("Response has validation error", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("detail");
+  });
+}

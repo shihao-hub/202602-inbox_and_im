@@ -1,0 +1,48 @@
+meta {
+  name: 07 Send Notification to All Users 200
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/notifications/{{businessNotificationId}}/send
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "send_to_all": true
+  }
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+  Content-Type: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const data = res.getBody();
+    console.log("✅ Notification sent to all users:", data.message);
+  } else {
+    console.error("❌ Failed to send notification to all, status:", res.getStatus());
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("message");
+  });
+
+  test("Message contains user count", function() {
+    const data = res.getBody();
+    expect(data.message).to.match(/\d+/);
+  });
+}

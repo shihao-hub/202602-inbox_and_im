@@ -1,0 +1,41 @@
+meta {
+  name: 02 Get Unread Notifications 200
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notifications?is_read=false&page=1&page_size=20
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const data = res.getBody();
+    console.log("✅ Retrieved unread notifications, count:", data.items.length);
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has items array", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("items");
+    expect(data.items).to.be.an("array");
+  });
+
+  test("All items are unread", function() {
+    const data = res.getBody();
+    data.items.forEach(function(item) {
+      expect(item.is_read).to.equal(false);
+    });
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: 08 Mark All as Read 200
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/notifications/read-all
+  body: none
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const data = res.getBody();
+    console.log("✅ All notifications marked as read:", data.message);
+  } else {
+    console.error("❌ Failed to mark all as read, status:", res.getStatus());
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("message");
+  });
+
+  test("Message contains count", function() {
+    const data = res.getBody();
+    expect(data.message).to.match(/\d+/);
+  });
+}

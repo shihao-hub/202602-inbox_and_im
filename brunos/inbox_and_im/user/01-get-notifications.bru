@@ -1,0 +1,57 @@
+meta {
+  name: 01 Get Notifications List 200
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notifications?page=1&page_size=20
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const data = res.getBody();
+    if (data.items && data.items.length > 0) {
+      bru.setVar("notificationRecordId", data.items[0].id);
+      console.log("✅ Retrieved notifications, first record ID:", data.items[0].id);
+    } else {
+      console.log("ℹ️ No notifications found");
+    }
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has items array", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("items");
+    expect(data.items).to.be.an("array");
+  });
+
+  test("Response has total count", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("total");
+    expect(data.total).to.be.at.least(0);
+  });
+
+  test("Items have required fields", function() {
+    const data = res.getBody();
+    if (data.items.length > 0) {
+      const item = data.items[0];
+      expect(item).to.have.property("id");
+      expect(item).to.have.property("title");
+      expect(item).to.have.property("content");
+      expect(item).to.have.property("is_read");
+      expect(item).to.have.property("created_at");
+    }
+  });
+}

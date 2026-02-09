@@ -1,0 +1,29 @@
+meta {
+  name: 08 Delete Notification 204
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/admin/notifications/{{notificationId}}
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 204) {
+    console.log("✅ Notification deleted successfully");
+  } else {
+    console.error("❌ Failed to delete notification, status:", res.getStatus());
+  }
+}
+
+tests {
+  test("Status is 204", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

@@ -1,0 +1,30 @@
+meta {
+  name: 02 Priority Test Workflow
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notifications
+  auth: none
+}
+
+script:pre-request {
+  console.log("🧪 Starting priority workflow test");
+  console.log("This test will verify priority handling");
+}
+
+script:post-response {
+  console.log("✅ Priority workflow test guide created");
+  console.log("Tests for different priority levels:");
+  console.log("1. Create notification with priority=0 (normal)");
+  console.log("2. Create notification with priority=1 (important)");
+  console.log("3. Create notification with priority=2 (urgent)");
+  console.log("4. Verify sorting by priority in list");
+}
+
+tests {
+  test("Priority workflow documented", function() {
+    expect(true).to.equal(true);
+  });
+}

@@ -1,0 +1,49 @@
+meta {
+  name: 06 Get Notification Detail 200
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notifications/{{notificationRecordId}}
+  auth: inherit
+}
+
+headers {
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
+  Accept: application/json
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    console.log("✅ Retrieved notification detail successfully");
+  } else {
+    console.error("❌ Failed to retrieve notification detail, status:", res.getStatus());
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has id", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("id");
+  });
+
+  test("Response has title", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("title");
+  });
+
+  test("Response has content", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("content");
+  });
+
+  test("Response has is_read field", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("is_read");
+  });
+}
