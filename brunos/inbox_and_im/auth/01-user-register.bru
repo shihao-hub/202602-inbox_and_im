@@ -32,6 +32,10 @@ script:post-response {
       bru.setVar("userToken", data.access_token);
       console.log("✅ User registered successfully, token saved");
     }
+    if (data.id) {
+      bru.setVar("userId", data.id);
+      console.log("✅ User ID saved:", data.id);
+    }
   }
 }
 
