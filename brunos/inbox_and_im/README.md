@@ -77,10 +77,10 @@ vars {
 **📋 手动执行流程**
 
 1. **认证测试**（按顺序执行）：
-   - `auth/01-user-register.bru` - 注册测试用户（自动设置 userId 和 userToken）
-   - `auth/02-user-login.bru` - 用户登录并获取 token
-   - `auth/03-admin-login.bru` - 管理员登录并获取 token
-   - `auth/04-get-current-user.bru` - 获取当前用户信息（设置 userId）
+   - `auth/01-user-register.bru` - 注册测试用户（只设置 userId，**不返回 token**）
+   - `auth/02-user-login.bru` - 用户登录并获取 userToken（**必须**）
+   - `auth/03-admin-login.bru` - 管理员登录并获取 adminToken
+   - `auth/04-get-current-user.bru` - 获取当前用户信息（可选，用于验证）
 
 2. **管理端测试**（需要管理员 token）：
    - `admin/01-create-notification.bru` - 创建站内信
@@ -140,7 +140,7 @@ vars {
 | 变量名 | 说明 | 来源 |
 |--------|------|------|
 | `adminToken` | 管理员 JWT token | `auth/03-admin-login.bru` |
-| `userToken` | 普通 JWT token | `auth/01-user-register.bru` 或 `auth/02-user-login.bru` |
+| `userToken` | 普通 JWT token | `auth/02-user-login.bru`（注册接口不返回 token） |
 | `notificationId` | 站内信 ID | `admin/01-create-notification.bru` |
 | `businessNotificationId` | 业务类型站内信 ID | `admin/02-create-business-notification.bru` |
 | `notificationRecordId` | 用户站内信记录 ID | `user/01-get-notifications.bru` |
@@ -240,20 +240,25 @@ tests {
 
 ### 常见问题
 
-1. **401 Unauthorized**
-   - 检查是否已运行认证测试
-   - 确认 token 是否正确设置
+1. **注册测试失败：期望 access_token 但响应中没有**
+   - 这是正常的！注册接口只返回用户信息（id, username, email 等），不返回 token
+   - 需要调用 `auth/02-user-login.bru` 获取 token
+   - 注册测试现在已更新为正确验证用户信息字段
 
-2. **404 Not Found**
+2. **401 Unauthorized**
+   - 检查是否已运行登录测试获取 token
+   - 确认 token 是否正确设置（userToken 或 adminToken）
+
+3. **404 Not Found**
    - 检查 API 路径是否正确
    - 确认资源 ID 是否存在
 
-3. **userId 模板变量未替换（`{{userId}}`）**
-   - 确保已按顺序运行测试：`auth/01-user-register.bru` → `auth/03-admin-login.bru` → `admin/01-create-notification.bru` → `admin/06-send-notification-to-users.bru`
+4. **userId 模板变量未替换（`{{userId}}`）**
+   - 确保已按顺序运行测试：`auth/01-user-register.bru` → `auth/02-user-login.bru` → `auth/03-admin-login.bru` → `admin/01-create-notification.bru` → `admin/06-send-notification-to-users.bru`
    - 或运行 `admin/00-send-notification-workflow.bru` 获取完整指南
    - 检查控制台是否输出 "✅ User ID saved"
 
-4. **测试失败**
+5. **测试失败**
    - 查看控制台输出的错误信息
    - 检查 API 服务是否正常运行
 

@@ -10,31 +10,42 @@ post {
   auth: none
 }
 
-body:json {
-  {
-    "username": "testuser",
-    "email": "testuser@example.com",
-    "password": "Test123456",
-    "full_name": "Test User"
-  }
-}
-
 headers {
   User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
   Accept: application/json
   Content-Type: application/json
 }
 
+body:json {
+  {
+    "username": "{{random_username}}",
+    "email": "{{random_email}}",
+    "password": "Test123456",
+    "full_name": "Test User"
+  }
+}
+
+script:pre-request {
+  // 生成随机字符串（例如：user_7a2b）
+  const randomSuffix = Math.random().toString(36).substring(2, 7);
+  const randomUsername = `user_${randomSuffix}`;
+
+  // 将生成的随机值存入运行时变量
+  bru.setVar("random_username", randomUsername);
+  // 如果 email 也需要随机，可以同理设置
+  bru.setVar("random_email", `${randomUsername}@example.com`);
+}
+
 script:post-response {
   if (res.getStatus() === 201) {
     const data = res.getBody();
-    if (data.access_token) {
-      bru.setVar("userToken", data.access_token);
-      console.log("✅ User registered successfully, token saved");
-    }
     if (data.id) {
       bru.setVar("userId", data.id);
-      console.log("✅ User ID saved:", data.id);
+      console.log("✅ User registered successfully");
+      console.log("   userId =", data.id);
+      console.log("   username =", data.username);
+      // 注意：注册接口不返回 token，需要调用登录接口获取
+      console.log("   ⚠️  需要调用登录接口获取 token");
     }
   }
 }
@@ -44,8 +55,24 @@ tests {
     expect(res.getStatus()).to.equal(201);
   });
 
-  test("Response has access_token", function() {
+  test("Response has id", function() {
     const data = res.getBody();
-    expect(data).to.have.property("access_token");
+    expect(data).to.have.property("id");
+  });
+
+  test("Response has username", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("username");
+  });
+
+  test("Response has email", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("email");
+  });
+
+  test("Response does NOT have access_token", function() {
+    const data = res.getBody();
+    // 注册接口只返回用户信息，不返回 token
+    expect(data).to.not.have.property("access_token");
   });
 }

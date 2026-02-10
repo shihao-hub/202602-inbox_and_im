@@ -38,22 +38,34 @@ script:post-response {
     // 保存用户信息
     if (data.id) {
       bru.setVar("userId", data.id);
+      bru.setVar("username", data.username);
       console.log("✅ Step 1: 用户注册成功");
       console.log("   userId =", data.id);
-    }
-    if (data.access_token) {
-      bru.setVar("userToken", data.access_token);
-      console.log("   userToken 已保存\n");
+      console.log("   username =", data.username);
+      console.log("   email =", data.email);
+      console.log("");
     }
 
+    console.log("⚠️  注意：注册接口只返回用户信息，不返回 token");
     console.log("接下来请按顺序运行以下测试：\n");
-    console.log("2️⃣  auth/03-admin-login.bru");
+
+    console.log("2️⃣  auth/02-user-login.bru");
+    console.log("   （用户登录，设置 userToken）");
+    console.log("   或者:");
+    console.log("   auth/04-get-current-user.bru");
+    console.log("   （获取当前用户信息，需要先登录）\n");
+
+    console.log("3️⃣  auth/03-admin-login.bru");
     console.log("   （管理员登录，设置 adminToken）\n");
-    console.log("3️⃣  admin/01-create-notification.bru");
+
+    console.log("4️⃣  admin/01-create-notification.bru");
     console.log("   （创建通知，设置 notificationId）\n");
-    console.log("4️⃣  admin/06-send-notification-to-users.bru");
+
+    console.log("5️⃣  admin/06-send-notification-to-users.bru");
     console.log("   （发送通知给 userId=" + data.id + "）\n");
+
     console.log("========================================\n");
+    console.log("💡 提示：测试用户密码固定为 Test123456\n");
 
   } else {
     console.error("❌ 用户注册失败，状态码:", statusCode);
@@ -71,8 +83,13 @@ tests {
     expect(data).to.have.property("id");
   });
 
-  test("Response has access_token", function() {
+  test("Response has username", function() {
     const data = res.getBody();
-    expect(data).to.have.property("access_token");
+    expect(data).to.have.property("username");
+  });
+
+  test("Response has email", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("email");
   });
 }

@@ -1,5 +1,11 @@
 meta {
   name: Inbox & IM API Collection
-  type: collection
   seq: 1
+}
+
+script:post-response {
+  // 全局监控
+  if (res.getStatus() !== 200) {
+    bru.setNextRequest(null);
+  }
 }
