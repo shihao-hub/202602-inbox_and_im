@@ -10,17 +10,17 @@ post {
   auth: none
 }
 
-body:json {
-  {
-    "username": "testuser",
-    "password": "Test123456"
-  }
-}
-
 headers {
   User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0
   Accept: application/json
   Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "{{random_username}}",
+    "password": "Test123456"
+  }
 }
 
 script:post-response {
@@ -37,7 +37,7 @@ tests {
   test("Status is 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("Response has access_token", function() {
     const data = res.getBody();
     expect(data).to.have.property("access_token");

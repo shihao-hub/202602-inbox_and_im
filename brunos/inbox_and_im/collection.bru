@@ -5,7 +5,7 @@ meta {
 
 script:post-response {
   // 全局监控
-  if (res.getStatus() !== 200) {
+  if (res.getStatus() !== 200 && res.getStatus() !== 201) {
     bru.setNextRequest(null);
   }
 }
